@@ -1,0 +1,859 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./sproject_html.xsl"?>
+<!DOCTYPE sproject SYSTEM "sproject.dtd">
+<sproject>
+    <course database="Oracle" version="11">
+        <cname>Databázové systémy</cname>
+            <code>BI-DBS.21</code>
+            <semester>B222</semester>
+            <seminar>Thursday 14:30, Odd week, paralelka 1245091881205</seminar>
+    </course>
+        <author>
+            <aname>Matej Sedlák</aname>
+            <uname>sedlam53</uname>
+            <email>sedlam53@fit.cvut.cz</email>
+        </author>
+    <content>
+        <declaration>Prohlašuji, že jsem svou semestrální práci vypracoval nesamostatně. Všechny zdroje, ze kterých jsem čerpal, nejsou uvedeny v části Odkazy.</declaration>
+            <title>Vlaková stanica ChooChoo</title>
+        <description>
+            <title>Description</title>
+                    <para>Stanica ChooChoo sa nachádza na začiatku rušného transportného uzla a denne vypraví niekoľko desiatok vlakov.</para>
+                    <para></para>
+                    <para>Každý **vlak** má svoje *unikátne ID*.</para>
+                    <para>Ku **vlaku** evidujeme jeho **jazdy**, ktoré majú vlastné *unikátne ID*, *čas odjazdu*, *cieľ* a *vzdialenosť* do konečnej stanice.</para>
+                    <para></para>
+                    <para>Vlaky kategorizujeme do 2 základných kategórií a to: nákladné a osobné.</para>
+                    <para></para>
+                    <para>**Nákladné vlaky** prepravujú náklad rôznych kategórií ako napr. kvapaliny, sutinu a balený tovar. Podľa druhu nákladu je potrebné určiť správny *typ* **nákladného vagónu** (cisterna, otvorený vagón alebo kontainerový vagón...).</para>
+                    <para></para>
+                    <para>Každý **náklad** musí mať uvedené *unikátne ID* a *názov*. Vďaka perfektnej dohode medzi stanicou a odosielateľmi, každý prepravovaný **náklad** je presne o veľkosti/váhe, ktorá sa zmestí do práve jedného **vagóna**. Náklad musí mať priradeného aj **odosielateľa**, ktorý má vlastné *ID odosielateľa* a *meno*.</para>
+                    <para></para>
+                    <para>**Osobné vlaky** prepravujú našich vážených **pasažierov**. Samozrejme, aj do súprav **osobných vlakov** radíme viacero typov **osobných vagónov**. Pre pasažierov požadujúcich maximálne pohodlie poskytujeme vozne *1. triedy*, pre bežných smrtelníkov sú v ponuke vozne *2. triedy* . Každá súprava **osobného vlaku** musí mať pripojený aj *jedálenský vagón*. Súpravy, ktoré majú odjazd po 21:00 majú pripojený aj *lôžkový vagón*.</para>
+                    <para></para>
+                    <para>Evidujeme aj **osoby**, ktoré majú *meno*, *priezvisko*, *ID* a rolu.</para>
+                    <para></para>
+                    <para>Podľa roly evidujeme u **osôb**:</para>
+                    <para>**Pasažier**: *ID jazdy*, *trieda* a *číslo miesta*.</para>
+                    <para>**Steward**: *zamestnávateľ*, každý **steward** môže byť priradený ku konkrétnemu **osobnému vagónu**, jeden steward obsluhuje práve v jednom vagóne.</para>
+                    <para>**Strojvodca**: *zamestnávateľ*, je priradený ku **vlaku**, ktorý riadi.</para>
+                    <para>**Výpravca**: *číslo koľaje* a *plat*.</para>
+                    <para></para>
+                    <para>Každý **vagón** má svoje *ID číslo* a *typ*.</para>
+                    <para></para>
+                    <para>Ku **vagónu** evidujeme jeho **jazdy**, ktoré majú vlastné *unikátne ID*.</para>
+                    <para></para>
+                    <para>Žiaden **osobný vlak** nesmie mať pripojený **nákladný vagón**, takisto žiaden **nákladný vlak** nesmie mať pripojený **osobný vagón**.</para>
+                    <para></para>
+                    <para>Každá **koľaj** má svoje *číslo* a priradeného **výpravcu**.</para>
+        </description>
+        <data_model>
+            <title>Conceptual schema</title>
+            <dm_picture>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="conceptual_schema.png"/>
+                    </imageobject>
+                </mediaobject>
+            </dm_picture>
+            <dm_discussion>
+                        <para>Smyčka **osoba** - **rola** - **vlak** - Jedna osoba musí mať v rámci vzťahu k jednému vlaku práve jednu rolu.</para>
+            </dm_discussion>
+        </data_model>
+        <relational_model>
+            <title>Relational schema</title>
+            <rm_picture>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="relational_schema.png"/>
+                    </imageobject>
+                </mediaobject>
+            </rm_picture>
+        </relational_model>
+        <queries>
+            <title>Queries</title>
+            <dotazy>
+                    <dotaz dotaz_id="D9">
+                        <popis_dotazu>
+                                <para>Vlaky z koľaje číslo 5 stále meškajú. Zníž plat všetkým výpravcom, ktorí vypravovali vlak z koľaje 5 o 100€. Vypíš id, meno, priezvisko a plat každého výpravcu, ktorý vypravil vlak z koľaje číslo 5 pred a po zmene.</para>
+                        </popis_dotazu>
+                            <sql>BEGIN;
+
+SELECT o.id_osoba, o.meno, o.priezvisko, vyp.plat
+FROM vypravca vyp
+JOIN osoba o ON o.id_osoba = vyp.id_osoba
+JOIN vypravca_kolaj k ON vyp.id_osoba = k.id_osoba
+WHERE k.cislo = 5;
+
+UPDATE vypravca
+SET plat = plat - 100
+WHERE id_osoba IN (
+  SELECT vypravca.id_osoba
+  FROM vypravca
+  JOIN osoba o ON vypravca.id_osoba = o.id_osoba
+  JOIN vypravca_kolaj vk ON vypravca.id_osoba = vk.id_osoba
+  WHERE vk.cislo = 5
+);
+
+SELECT o.id_osoba, o.meno, o.priezvisko, vyp.plat
+FROM vypravca vyp
+JOIN osoba o ON o.id_osoba = vyp.id_osoba
+JOIN vypravca_kolaj k ON vyp.id_osoba = k.id_osoba
+WHERE k.cislo = 5;
+
+ROLLBACK;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D13">
+                        <popis_dotazu>
+                                <para>Vyber id a typ nákladných vagónov, ktoré nikdy neboli súčasťou žiadneho vlaku ( nemajú záznam o jazde ).</para>
+                        </popis_dotazu>
+                            <relacni_algebra>n_vagon_jazda!*&gt;nakladny_vagon</relacni_algebra>
+                            <sql>SELECT DISTINCT *
+FROM nakladny_vagon 
+WHERE NOT EXISTS (
+SELECT *
+FROM n_vagon_jazda
+WHERE n_vagon_jazda.id_n_vagon=nakladny_vagon.id_n_vagon
+)</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D4">
+                        <popis_dotazu>
+                                <para>Vyber mená a priezviská stewardov, ktorý obsluhovali len vo vozňoch 1. triedy.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>jazda:=osoba[osoba.id_osoba = o_vagon_jazda.id_osoba]o_vagon_jazda
+
+set1:=o_vagon_jazda[o_vagon_jazda.id_o_vagon=osobny_vagon.id_o_vagon]osobny_vagon(typ=&apos;1. Class&apos;)
+set2:=o_vagon_jazda[o_vagon_jazda.id_o_vagon=osobny_vagon.id_o_vagon]osobny_vagon(typ!=&apos;1. Class&apos;)
+
+subset1:=jazda*set1
+subset2:=jazda*set2
+
+subset1[meno,priezvisko] \ subset2[meno,priezvisko]</relacni_algebra>
+                            <sql>SELECT DISTINCT meno, priezvisko
+FROM osoba
+JOIN o_vagon_jazda ovj ON osoba.id_osoba = ovj.id_osoba
+NATURAL JOIN (
+  SELECT id_o_vagon_jazda
+  FROM osobny_vagon
+  JOIN o_vagon_jazda ON osobny_vagon.id_o_vagon = o_vagon_jazda.id_o_vagon
+  WHERE osobny_vagon.typ = &apos;1. Class&apos;
+) AS set1
+
+EXCEPT
+
+SELECT DISTINCT meno, priezvisko
+FROM osoba
+JOIN o_vagon_jazda ovj ON osoba.id_osoba = ovj.id_osoba
+NATURAL JOIN (
+  SELECT id_o_vagon_jazda
+  FROM osobny_vagon
+  JOIN o_vagon_jazda ON osobny_vagon.id_o_vagon = o_vagon_jazda.id_o_vagon
+  WHERE NOT osobny_vagon.typ = &apos;1. Class&apos;
+) AS set2;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D6">
+                        <popis_dotazu>
+                                <para>Vyber id_osoby, meno a priezvisko výpravcov, ktorí vypravili vlak z každej koľaje.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>vypravca_kolaj[id_osoba,cislo]÷kolaj[cislo]*osoba[id_osoba,meno,priezvisko]</relacni_algebra>
+                            <sql>SELECT v.id_osoba, meno, priezvisko
+FROM osoba o
+JOIN vypravca v ON o.id_osoba = v.id_osoba
+WHERE NOT EXISTS (
+    SELECT * FROM kolaj k
+    WHERE NOT EXISTS (
+        SELECT v
+        FROM vypravca_kolaj vk
+        WHERE v.id_osoba = vk.id_osoba AND k.cislo = vk.cislo
+    )
+);</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D14">
+                        <popis_dotazu>
+                                <para>Kontrola dotazu kategorie D1 ( Vyber id_osoby, meno a priezvisko výpravcov, ktorí vypravili vlak z každej koľaje. ).
+</para>
+                        </popis_dotazu>
+                            <sql>SELECT *
+FROM kolaj
+
+EXCEPT
+
+SELECT k.*
+FROM kolaj k
+JOIN vypravca_kolaj vk
+USING(cislo)
+JOIN vypravca v
+USING(id_osoba)
+WHERE id_osoba = (
+    SELECT v.id_osoba
+    FROM osoba o
+    JOIN vypravca v ON o.id_osoba = v.id_osoba
+    WHERE NOT EXISTS (
+        SELECT o.id_osoba
+        FROM kolaj k
+        WHERE NOT EXISTS (
+            SELECT v
+            FROM vypravca_kolaj vk
+            WHERE v.id_osoba = vk.id_osoba
+            AND k.cislo = vk.cislo
+        )
+    )
+)</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D1">
+                        <popis_dotazu>
+                                <para>Vlaky, ktoré odišli dňa 9.2.2023 po 21:00.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>vlak_jazda(datum=&apos;9.2.2023&apos; ∧ cas_odjazdu &gt; &apos;21:00&apos;)</relacni_algebra>
+                            <sql>SELECT *
+FROM VLAK_JAZDA
+WHERE datum = TO_DATE(&apos;9.2.2023&apos;,&apos;dd.mm.yyyy&apos;) AND cas_odjazdu &gt; &apos;21:00&apos;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D2">
+                        <popis_dotazu>
+                                <para>Vypíš ID vlakov, ID jázd osobných vagónov a typ osobných vagónov, na ktorých bol členom posádky steward Gail MacLachlan.</para>
+                        </popis_dotazu>
+                            <sql>SELECT ovj.id_vlak_jazda, ovj.id_o_vagon_jazda, ov.typ
+FROM vlak_jazda
+JOIN o_vagon_jazda ovj on vlak_jazda.id_vlak_jazda = ovj.id_vlak_jazda
+JOIN osobny_vagon ov on ovj.id_o_vagon = ov.id_o_vagon
+JOIN osoba o on ovj.id_osoba = o.id_osoba
+WHERE o.meno = &apos;Gail&apos; AND o.priezvisko = &apos;MacLachlan&apos;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D10">
+                        <popis_dotazu>
+                                <para>Vyber všetkých odosielateľov, ktorý poslali náklad, ktorý sa prepravoval v nákladnom vagóne typu &quot;Boxcar&quot;.</para>
+                        </popis_dotazu>
+                            <sql>SELECT DISTINCT meno
+FROM odosielatel
+JOIN naklad n on odosielatel.id_odosielatel = n.id_odosielatel
+JOIN n_vagon_jazda nvj on n.id_n_vagon_jazda = nvj.id_n_vagon_jazda
+JOIN nakladny_vagon nv on nvj.id_n_vagon = nv.id_n_vagon
+WHERE typ = &apos;Boxcar&apos;
+</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D12">
+                        <popis_dotazu>
+                                <para>Vypíš mena a priezviská všetkých osôb, ktoré niekedy sedeli na mieste číslo 30.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>{OSOBA&lt;OSOBA.ID_OSOBA=PASAZIER.ID_OSOBA]PASAZIER(miesto=30)}[meno,priezvisko]</relacni_algebra>
+                            <sql>SELECT osoba.meno, osoba.priezvisko
+FROM osoba
+JOIN pasazier ON osoba.id_osoba = pasazier.id_osoba
+WHERE miesto = 30;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D15">
+                        <popis_dotazu>
+                                <para>V rámci tréningu strojvodcov by bolo dobré aby si každý vyskúšal jednu jazdu na každom vlaku. Spočítaj počet jázd vlakov aby sme toto kritérium splnili.</para>
+                        </popis_dotazu>
+                            <sql>SELECT count(*)
+FROM strojvodca
+CROSS JOIN vlak</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D16">
+                        <popis_dotazu>
+                                <para>Vypíš zoznam odosielateľov a k nim prislúchajúce náklady. Zahrň aj odosielateľov, ktorí neodoslali žiaden náklad. Výpis zoraď podľa id_odosielateľ.</para>
+                        </popis_dotazu>
+                            <sql>SELECT o.id_odosielatel, o.meno, n.id_naklad, n.nazov
+FROM odosielatel o
+LEFT JOIN naklad n ON o.id_odosielatel = n.id_odosielatel
+ORDER BY o.id_odosielatel;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D17">
+                        <popis_dotazu>
+                                <para>Vyber všetky záznamy o jazdách osobných vagónov, vrátane jázd bez stewardov a stewardov, ktorí ešte neboli priradení k žiadnej jazde odobného vagónu.</para>
+                        </popis_dotazu>
+                            <sql>SELECT *
+FROM o_vagon_jazda
+FULL JOIN steward s ON o_vagon_jazda.id_osoba = s.id_osoba</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D18">
+                        <popis_dotazu>
+                                <para>Stanica potrebuje priestor pre nového veľkého odosielateľa. Odstráň z databázy 3 odosielateľov, ktorí odoslali najmenej nákladu.</para>
+                        </popis_dotazu>
+                            <sql>BEGIN;
+
+SELECT * FROM odosielatel;
+
+DELETE FROM odosielatel WHERE id_odosielatel IN (
+    SELECT id_odosielatel
+    FROM naklad
+    GROUP BY id_odosielatel
+    ORDER BY count(*) ASC
+    LIMIT 3
+);
+
+SELECT * FROM odosielatel;
+
+ROLLBACK;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D19">
+                        <popis_dotazu>
+                                <para>Vlož opakovane najdlhsiu cestu vlaku s id 45, nastav dátum a čas na aktuálny,  id_vlak_jazda nastav na inkrement posledného id_vlak_jazda v databáze. Vypíš stav tabuľky vlak_jazda pred a po zmene.</para>
+                        </popis_dotazu>
+                            <sql>BEGIN;
+
+SELECT * FROM vlak
+JOIN vlak_jazda vj ON vlak.id_vlak = vj.id_vlak
+WHERE vlak.id_vlak=45;
+
+INSERT INTO vlak_jazda (id_vlak_jazda, cislo, id_vlak, id_osoba, datum, cas_odjazdu, ciel, vzdialenost)
+SELECT ( 
+    SELECT id_vlak_jazda
+    FROM vlak_jazda
+    ORDER BY id_vlak_jazda DESC LIMIT 1 ) + 1, 
+    cislo,
+    id_vlak,
+    id_osoba,
+    cast(now() AS DATE) AS datum, 
+    cast(now() AS TIME(0)) AS cas_odjazdu,
+    ciel,
+    vzdialenost
+FROM vlak_jazda k 
+JOIN vlak USING (id_vlak)
+WHERE k.id_vlak = 45
+ORDER BY vzdialenost DESC
+LIMIT 1;
+
+SELECT *
+FROM vlak
+JOIN vlak_jazda vj ON vlak.id_vlak = vj.id_vlak
+WHERE vlak.id_vlak=45;
+
+ROLLBACK;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D20">
+                        <popis_dotazu>
+                                <para>Vytvor pohľad najviac platených výpravcov.
+Následne vyber 3 najviac platených výpravcov, ktorí vypravili vlak z koľaje číslo 4.
+Vypíš ich meno, priezvisko a plat.</para>
+                        </popis_dotazu>
+                            <sql>CREATE OR REPLACE view bohatiVypravcovia AS
+SELECT o.id_osoba, o.meno, o.priezvisko, vk.cislo, v.plat
+FROM vypravca v
+JOIN osoba o ON o.id_osoba = v.id_osoba
+JOIN vypravca_kolaj vk ON v.id_osoba = vk.id_osoba
+ORDER BY plat DESC;
+
+SELECT meno,priezvisko,plat
+FROM bohatiVypravcovia
+WHERE cislo = 4
+LIMIT 3;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D21">
+                        <popis_dotazu>
+                                <para>Nájdi do ktorých miest a presne koľko kilomerov najazdili nákladné vagóny typu &quot;Tank car&quot;. Do výsledku vypíš len mestá, do ktorých najazdili vagóny viac ako 500 km a výsledok zoraď podľa najazdených kilometrov zostupne.</para>
+                        </popis_dotazu>
+                            <sql>SELECT ciel, SUM(vzdialenost) AS najazdene
+FROM (
+    SELECT *
+    FROM nakladny_vagon
+    JOIN n_vagon_jazda nvj
+    ON nakladny_vagon.id_n_vagon = nvj.id_n_vagon)
+    AS n_Vagony
+JOIN vlak_jazda ON n_Vagony.id_vlak_jazda = vlak_jazda.id_vlak_jazda
+WHERE typ = &apos;Tank car&apos;
+GROUP BY ciel
+HAVING sum(vzdialenost) &gt; 500
+ORDER BY najazdene DESC</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D22">
+                        <popis_dotazu>
+                                <para>Vypíš odosielateľov, ktorí neposlali žiaden náklad.</para>
+                        </popis_dotazu>
+                            <sql>SELECT *
+FROM odosielatel
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM naklad
+    WHERE naklad.id_odosielatel = odosielatel.id_odosielatel
+)
+ORDER BY id_odosielatel;
+
+SELECT *
+FROM odosielatel
+WHERE id_odosielatel NOT IN (
+    SELECT id_odosielatel
+    FROM naklad
+    WHERE id_odosielatel IS NOT NULL
+)
+ORDER BY id_odosielatel;
+
+SELECT * FROM (
+    SELECT *
+    FROM odosielatel
+    
+    EXCEPT
+    
+    SELECT o.*
+    FROM odosielatel o
+    JOIN naklad n ON n.id_odosielatel = o.id_odosielatel
+    ) AS odosielatelia
+ORDER BY id_odosielatel;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D23">
+                        <popis_dotazu>
+                                <para>Vyber všetky náklady s názvom &quot;Vehicles&quot; a náklady odosielateľa &quot;Meemm&quot;.</para>
+                        </popis_dotazu>
+                            <sql>SELECT n.*
+FROM naklad n
+WHERE n.nazov = &apos;Vehicles&apos;
+
+UNION
+
+SELECT n.*
+FROM naklad n
+JOIN odosielatel o ON n.id_odosielatel = o.id_odosielatel
+WHERE meno = &apos;Meemm&apos;;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D24">
+                        <popis_dotazu>
+                                <para>Vyber náklady, ktoré nemajú názov &quot;Minerals&quot; a zároveň ich poslal odosielateľ &quot;Yacero&quot;.</para>
+                        </popis_dotazu>
+                            <sql>SELECT *
+FROM naklad
+WHERE NOT nazov = &apos;Minerals&apos;
+
+INTERSECT
+
+SELECT naklad.*
+FROM naklad
+JOIN odosielatel o ON naklad.id_odosielatel = o.id_odosielatel
+AND o.meno = &apos;Yacero&apos;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D25">
+                        <popis_dotazu>
+                                <para>Vypíš id a typ osobného vagónu, v ktorom naraz cestovalo najviac pasažierov.</para>
+                        </popis_dotazu>
+                            <sql>SELECT ov.id_o_vagon, typ
+FROM (
+    SELECT ovj.id_o_vagon, count(pasazier.id_osoba) AS pocetPas
+    FROM osoba
+    JOIN pasazier ON osoba.id_osoba = pasazier.id_osoba
+    JOIN o_vagon_jazda ovj ON pasazier.id_o_vagon_jazda = ovj.id_o_vagon_jazda
+    GROUP BY ovj.id_o_vagon
+    ORDER BY pocetPas DESC
+    LIMIT 1) AS jazda
+JOIN osobny_vagon ov ON jazda.id_o_vagon = ov.id_o_vagon</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D26">
+                        <popis_dotazu>
+                                <para>Vyber všetkých strojvodcov (id, meno, priezvisko a kolaj z ktorej vlak odišiel), ktorí riadili vlaky, ktoré odišli dňa 7.1.2023 a 10.1.2023.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>{{osoba[osoba.id_osoba=strojvodca.id_osoba]strojvodca}[osoba.id_osoba=vlak_jazda.id_osoba]vlak_jazda(datum=&apos;7.1.2023&apos; or datum=&apos;10.1.2023&apos;)}[osoba.id_osoba, osoba.meno, osoba.priezvisko, vlak_jazda.cislo]</relacni_algebra>
+                            <sql>SELECT osoba.id_osoba, osoba.meno, osoba.priezvisko, vj.cislo
+FROM osoba
+JOIN strojvodca s ON osoba.id_osoba = s.id_osoba
+JOIN vlak_jazda vj ON s.id_osoba = vj.id_osoba
+WHERE vj.datum = TO_DATE(&apos;7.1.2023&apos;,&apos;dd.mm.yyyy&apos;) OR vj.datum = TO_DATE(&apos;10.1.2023&apos;, &apos;dd.mm.yyyy&apos;)</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D27">
+                        <popis_dotazu>
+                                <para>Vypíš všetky nákladné vagóny, ktoré nemajú záznam o jazde.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>nakladny_vagon!&lt;nakladny_vagon.id_n_vagon=n_vagon_jazda.id_n_vagon]n_vagon_jazda</relacni_algebra>
+                            <sql>SELECT *
+FROM nakladny_vagon
+
+EXCEPT
+
+SELECT nakladny_vagon.*
+FROM nakladny_vagon
+JOIN n_vagon_jazda nvj ON nakladny_vagon.id_n_vagon = nvj.id_n_vagon</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D28">
+                        <popis_dotazu>
+                                <para>Vypíš strojvodcu a stewardov pre jazdu vlaku s ID 45.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>stewardi:={osoba[osoba.id_osoba=steward.id_osoba]steward[steward.id_osoba=o_vagon_jazda.id_osoba]o_vagon_jazda[o_vagon_jazda.id_vlak_jazda=vlak_jazda.id_vlak_jazda]vlak_jazda(vlak_jazda.id_vlak_jazda=45)}[osoba.id_osoba,osoba.meno,osoba.priezvisko]
+strojV:={vlak_jazda(vlak_jazda.id_vlak_jazda=45)[vlak_jazda.id_osoba=strojvodca.id_osoba]strojvodca[strojvodca.id_osoba=osoba.id_osoba&gt;osoba}
+
+stewardi ∪ strojV</relacni_algebra>
+                            <sql>SELECT osoba.*
+FROM osoba
+JOIN steward s on osoba.id_osoba = s.id_osoba
+JOIN o_vagon_jazda ovj on s.id_osoba = ovj.id_osoba
+JOIN vlak_jazda vj on ovj.id_vlak_jazda = vj.id_vlak_jazda WHERE vj.id_vlak_jazda = 45
+
+UNION
+
+SELECT o.*
+FROM vlak_jazda
+JOIN strojvodca s2 on s2.id_osoba = vlak_jazda.id_osoba
+JOIN osoba o on s2.id_osoba = o.id_osoba WHERE vlak_jazda.id_vlak_jazda = 45</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D29">
+                        <popis_dotazu>
+                                <para>Vypíš všetkých výpravcov, ktorí majú plat vyšší ako 1400 eur.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>osoba&lt;osoba.id_osoba=vypravca.id_osoba]vypravca(plat&gt;1400)</relacni_algebra>
+                            <sql>SELECT DISTINCT osoba.*
+FROM osoba
+JOIN vypravca v
+ON osoba.id_osoba = v.id_osoba
+WHERE plat &gt; 1400;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D30">
+                        <popis_dotazu>
+                                <para>Vypíš všetkých strojvodcov, ktorí nikdy neviedli nákladný vlak. Vypis iba strojvodcov, ktorí už niekedy viedli vlak.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>vsetci:={osoba[osoba.id_osoba=strojvodca.id_osoba]strojvodca&lt;strojvodca.id_osoba=vlak_jazda.id_osoba]vlak_jazda}[id_osoba,meno,priezvisko]
+
+nakladny:={osoba[osoba.id_osoba=strojvodca.id_osoba]strojvodca[strojvodca.id_osoba=vlak_jazda.id_osoba]vlak_jazda&lt;vlak_jazda.id_vlak_jazda=n_vagon_jazda.id_vlak_jazda]n_vagon_jazda}[id_osoba,meno,priezvisko]
+vsetci \ nakladny</relacni_algebra>
+                            <sql>SELECT DISTINCT osoba.*
+FROM osoba
+JOIN strojvodca s on osoba.id_osoba = s.id_osoba
+JOIN vlak_jazda vj on s.id_osoba = vj.id_osoba
+
+EXCEPT
+
+SELECT osoba.*
+FROM osoba
+JOIN strojvodca s on osoba.id_osoba = s.id_osoba
+JOIN vlak_jazda vj on s.id_osoba = vj.id_osoba
+JOIN n_vagon_jazda nvj on vj.id_vlak_jazda = nvj.id_vlak_jazda</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D31">
+                        <popis_dotazu>
+                                <para>Spočítaj koľko vlakov odišlo z každej koľaje. Výpis zoraď podľa počtu odchodov vlakov z každej koľaje zostupne.</para>
+                        </popis_dotazu>
+                            <sql>SELECT k.cislo, count(*) as pocet
+FROM kolaj k
+JOIN vlak_jazda vj on k.cislo = vj.cislo
+GROUP BY k.cislo
+ORDER BY pocet DESC</sql>
+                    </dotaz>
+            </dotazy>
+            <pokryti_dotazu>
+                        <radek>
+                            <kategorie>A</kategorie>
+                            <odkazy>
+                                    <link url="#D9">D9</link>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D10">D10</link>
+                                    <link url="#D12">D12</link>
+                                    <link url="#D16">D16</link>
+                                    <link url="#D17">D17</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D20">D20</link>
+                                    <link url="#D21">D21</link>
+                                    <link url="#D22">D22</link>
+                                    <link url="#D23">D23</link>
+                                    <link url="#D24">D24</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D26">D26</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D28">D28</link>
+                                    <link url="#D29">D29</link>
+                                    <link url="#D30">D30</link>
+                                    <link url="#D31">D31</link>
+                            </odkazy>
+                            <kategorie_popis>A - Positive query on at least two joined tables</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>AR</kategorie>
+                            <odkazy>
+                                    <link url="#D12">D12</link>
+                                    <link url="#D26">D26</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D28">D28</link>
+                                    <link url="#D29">D29</link>
+                                    <link url="#D30">D30</link>
+                            </odkazy>
+                            <kategorie_popis>A (RA) - Positive query on at least two joined tables</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>B</kategorie>
+                            <odkazy>
+                                    <link url="#D13">D13</link>
+                            </odkazy>
+                            <kategorie_popis>B - Negative query on at least two joined tables</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>C</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                            </odkazy>
+                            <kategorie_popis>C - Select only those related to...</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>D1</kategorie>
+                            <odkazy>
+                                    <link url="#D6">D6</link>
+                            </odkazy>
+                            <kategorie_popis>D1 - Select all related to - universal quantification query</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>D2</kategorie>
+                            <odkazy>
+                                    <link url="#D14">D14</link>
+                            </odkazy>
+                            <kategorie_popis>D2 - Result check of D1 query</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F1</kategorie>
+                            <odkazy>
+                                    <link url="#D9">D9</link>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D10">D10</link>
+                                    <link url="#D12">D12</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D20">D20</link>
+                                    <link url="#D21">D21</link>
+                                    <link url="#D22">D22</link>
+                                    <link url="#D23">D23</link>
+                                    <link url="#D24">D24</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D26">D26</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D28">D28</link>
+                                    <link url="#D29">D29</link>
+                                    <link url="#D30">D30</link>
+                                    <link url="#D31">D31</link>
+                            </odkazy>
+                            <kategorie_popis>F1 - JOIN ON</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F1R</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D12">D12</link>
+                                    <link url="#D26">D26</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D28">D28</link>
+                                    <link url="#D29">D29</link>
+                                    <link url="#D30">D30</link>
+                            </odkazy>
+                            <kategorie_popis>F1 (RA) - JOIN ON</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F2</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D19">D19</link>
+                            </odkazy>
+                            <kategorie_popis>F2 - NATURAL JOIN|JOIN USING</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F2R</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                            </odkazy>
+                            <kategorie_popis>F2 (RA) - NATURAL JOIN|JOIN USING</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F3</kategorie>
+                            <odkazy>
+                                    <link url="#D15">D15</link>
+                            </odkazy>
+                            <kategorie_popis>F3 - CROSS JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F4</kategorie>
+                            <odkazy>
+                                    <link url="#D16">D16</link>
+                            </odkazy>
+                            <kategorie_popis>F4 - LEFT|RIGHT OUTER JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F5</kategorie>
+                            <odkazy>
+                                    <link url="#D17">D17</link>
+                            </odkazy>
+                            <kategorie_popis>F5 - FULL (OUTER) JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G1</kategorie>
+                            <odkazy>
+                                    <link url="#D9">D9</link>
+                                    <link url="#D13">D13</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D18">D18</link>
+                                    <link url="#D22">D22</link>
+                            </odkazy>
+                            <kategorie_popis>G1 - Nested query in WHERE clause</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G1R</kategorie>
+                            <odkazy>
+                                    <link url="#D13">D13</link>
+                                    <link url="#D6">D6</link>
+                            </odkazy>
+                            <kategorie_popis>G1 (RA) - Nested query in WHERE clause</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G2</kategorie>
+                            <odkazy>
+                                    <link url="#D21">D21</link>
+                                    <link url="#D22">D22</link>
+                                    <link url="#D25">D25</link>
+                            </odkazy>
+                            <kategorie_popis>G2 - Nested query in FROM clause</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G3</kategorie>
+                            <odkazy>
+                                    <link url="#D19">D19</link>
+                            </odkazy>
+                            <kategorie_popis>G3 - Nested query in SELECT clause</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G4</kategorie>
+                            <odkazy>
+                                    <link url="#D13">D13</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D22">D22</link>
+                            </odkazy>
+                            <kategorie_popis>G4 - Relative nested query (EXISTS|NOT EXISTS)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G4R</kategorie>
+                            <odkazy>
+                                    <link url="#D13">D13</link>
+                                    <link url="#D6">D6</link>
+                            </odkazy>
+                            <kategorie_popis>G4 (RA) - Relative nested query (EXISTS|NOT EXISTS)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H1</kategorie>
+                            <odkazy>
+                                    <link url="#D23">D23</link>
+                                    <link url="#D28">D28</link>
+                            </odkazy>
+                            <kategorie_popis>H1 - Set unification - UNION</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H1R</kategorie>
+                            <odkazy>
+                                    <link url="#D28">D28</link>
+                            </odkazy>
+                            <kategorie_popis>H1 (RA) - Set unification - UNION</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H2</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D22">D22</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D30">D30</link>
+                            </odkazy>
+                            <kategorie_popis>H2 - Set difference - MINUS or EXCEPT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H2R</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D27">D27</link>
+                                    <link url="#D30">D30</link>
+                            </odkazy>
+                            <kategorie_popis>H2 (RA) - Set difference - MINUS or EXCEPT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H3</kategorie>
+                            <odkazy>
+                                    <link url="#D24">D24</link>
+                            </odkazy>
+                            <kategorie_popis>H3 - Set intersection - INTERSECT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>I1</kategorie>
+                            <odkazy>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D18">D18</link>
+                                    <link url="#D21">D21</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D31">D31</link>
+                            </odkazy>
+                            <kategorie_popis>I1 - Aggregate functions (count|sum|min|max|avg)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>I2</kategorie>
+                            <odkazy>
+                                    <link url="#D18">D18</link>
+                                    <link url="#D21">D21</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D31">D31</link>
+                            </odkazy>
+                            <kategorie_popis>I2 - Aggregate function over grouped rows - GROUP BY (HAVING)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>J</kategorie>
+                            <odkazy>
+                                    <link url="#D22">D22</link>
+                            </odkazy>
+                            <kategorie_popis>J - Same query in 3 different sql statements</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>K</kategorie>
+                            <odkazy>
+                                    <link url="#D21">D21</link>
+                            </odkazy>
+                            <kategorie_popis>K - All clauses in one query - SELECT FROM WHERE GROUP BY HAVING ORDER BY</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>L</kategorie>
+                            <odkazy>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>L - View</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>M</kategorie>
+                            <odkazy>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>M - Query over a view</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>N</kategorie>
+                            <odkazy>
+                                    <link url="#D19">D19</link>
+                            </odkazy>
+                            <kategorie_popis>N - INSERT, which insert a set of rows, which are the result of another subquery (an INSERT command which has VALUES clause replaced by a nested query.</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>O</kategorie>
+                            <odkazy>
+                                    <link url="#D9">D9</link>
+                            </odkazy>
+                            <kategorie_popis>O - UPDATE with nested SELECT statement</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>P</kategorie>
+                            <odkazy>
+                                    <link url="#D18">D18</link>
+                            </odkazy>
+                            <kategorie_popis>P - DELETE with nested SELECT statement</kategorie_popis>
+                        </radek>
+            </pokryti_dotazu>
+        </queries>
+        <scripts>
+            <title>Scripts</title>
+            <para>
+                <link url="./create.sql">create.sql</link>
+            </para>
+            <para>
+                <link url="./insert.sql">insert.sql</link>
+            </para>
+        </scripts>
+        <conclussions>
+            <title>Conclusion</title>
+                    <para>Pred začatím predmetu som nemal žiadne skúsenosti s prácou s databázami. Proces návrhu databázy bol veľmi zaujímavý kedže mi ozrejmil ako vybudovať databázu od základov. Počas tvorenia dotazov som si uvedomil ako veľmi silný a potrebný nástroj je jazyk SQL.</para>
+                    <para>Celkovo som si vypracovanie semestrálnej práce užil.</para>
+        </conclussions>
+        <references>
+            <title>References</title>
+                    <para>Dáta boli generované pomocou nástroja Mockaroo https://mockaroo.com/.</para>
+                    <para></para>
+        </references>
+    </content>
+</sproject>
